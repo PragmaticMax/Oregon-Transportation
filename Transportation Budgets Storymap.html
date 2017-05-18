@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:text-align="http://www.w3.org/1999/xhtml">
+<head>
+    <title>Transportation Budgets</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <!--My Favicon-->
+    <link rel="shortcut icon" href="img/favico.ico" type="image/x-icon">
+
+    <!-- Webfonts-->
+    <link href="https://fonts.googleapis.com/css?family=Sorts+Mill+Goudy" rel="stylesheet">
+
+    <!--add required stylesheets-->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.0.2/dist/leaflet.css" />
+
+    <!--animation-->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.5.2/animate.min.css">
+
+    <link rel="stylesheet" type="text/css" href="css/storymap.css">
+    <!--My CSS-->
+    <link rel="stylesheet" type="text/css" href="css/LPRO_Style.css">
+    <link rel="stylesheet" type="text/css" href="css/main.css">
+
+    <!--add required libraries-->
+    <script src="https://unpkg.com/leaflet@1.0.2/dist/leaflet.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet-ajax/2.1.0/leaflet.ajax.min.js"></script>
+    <script src="https://cdn.bootcss.com/chroma-js/1.3.3/chroma.min.js"></script>
+    <script src="js/bouncemarker.js"></script>
+    <script src="js/globeminimap.js"></script>
+
+    <!--story map plugin-->
+    <script src="js/storymap.js"></script>
+</head>
+<body>
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-sm-4 col-md-2 main">
+            <section data-scene="scene1">
+                <h1><img src="img/LPRO Logo no text.png" alt="" style="width:75px;height:48px"/>Legislative Policy and Research Office</h1>
+                <h2>Oregon Transportation Budgets</h2>
+                <p>Throughout the state of Oregon, transportation infrastructure is funded through three different levels: Local (City), County, and State. This piece will provide an interactive tool that allows the Oregon Legislative Assembly to explore the Local and County transportation budgets.<br>
+                    <i>Use the arrow in the bottom left corner to navigate through layers, or hover to the left of this box to select a specific scene.</i></p>
+            </section>
+            <section data-scene="scene2">
+                <h1><img src="img/LPRO Logo no text.png" alt="" style="width:75px;height:48px"/>Legislative Policy and Research Office</h1>
+                <h2>County Transportation Budgets</h2>
+                <p>This provides a visualization for  highlighted areas provide county boundaries throughout the state. Hover over a county to display transportation budget information<br>
+                    <i>Use the arrow in the bottom left corner to navigate through layers, or hover to the left of this box to select a specific scene.</i></p>
+            </section>
+            <section data-scene="scene3">
+                <h1><img src="img/LPRO Logo no text.png" alt="" style="width:75px;height:48px"/>Legislative Policy and Research Office</h1>
+                <h2>City Transportation Budgets</h2>
+                <p>Each highlighted area represents the city limits of the corresponding city. Click a city to see its transportation budget. <b>All city limits boundaries are approximate.</b><br>
+                    <i>Use the arrow in the bottom left corner to navigate through layers, or hover to the left of this box to select a specific scene.</i></p>
+            </section>
+            <section data-scene="scene4">
+                <h1><img src="img/LPRO Logo no text.png" alt="" style="width:75px;height:48px"/>Legislative Policy and Research Office</h1>
+                <h2>House Districts</h2>
+                <p>The markers present represent propesed transportation projects. Click a marker to see information on each project. <b>Marker placement is approximate</b><br>
+                    <i>Use the arrow in the bottom left corner to navigate through layers, or hover to the left of this box to select a specific scene.</i></p>
+            </section>
+            <section data-scene="scene5">
+                <h1><img src="img/LPRO Logo no text.png" alt="" style="width:75px;height:48px"/>Legislative Policy and Research Office</h1>
+                <h2>Senate Districts</h2>
+                <p>The markers present represent propesed transportation projects. Click a marker to see information on each project. <b>Marker placement is approximate</b><br>
+                    <i>Use the arrow in the bottom left corner to navigate through layers, or hover to the left of this box to select a specific scene.</i></p>
+            </section>
+        </div>
+        <div id="map" class="col-sm-4 col-md-2 sidebar"></div>
+    </div>
+
+    <!--add a scrolling down arrow-->
+    <div class="animated zoomIn infinite glyphicon glyphicon-menu-down arrow-down"></div>
+    <!--add a navigation bar-->
+   <!-- <div class="navbar fixed-center"></div>-->
+    <div class="navwidget text-center"></div>
+</div>
+<script type="text/javascript">
+    function getColor(County_Trans_Buds_Budget){
+        //condition ? valueIfTrue : valueIfFalse
+        return  County_Trans_Buds_Budget > 14000000 ? '#7f2704' :
+                County_Trans_Buds_Budget > 10000000 ? '#a63603' :
+                County_Trans_Buds_Budget >  7000000 ? '#d94801' :
+                County_Trans_Buds_Budget >  3500000 ? '#f16913' :
+                County_Trans_Buds_Budget >  2500000 ? '#fd8d3c' :
+                County_Trans_Buds_Budget >  1500000 ? '#fdae6b' :
+                County_Trans_Buds_Budget >  1000000 ? '#fdd0a2' :
+                County_Trans_Buds_Budget >   500000 ? '#fee6ce' :
+                                                      '#fff5eb' ;
+    }
+    // Set style function that sets fill color property equal to cell tower density
+    function style(feature) {
+        return {
+            fillColor: getColor(feature.properties.County_Trans_Buds_Budget),
+            fillOpacity: 0.8,
+            weight: 1,
+            opacity: 0.3,
+            color: 'black'
+        };
+    }
+    var counties_choropleth = L.geoJson.ajax('js/OR_CounBud.geojson',
+        {
+            style: style,
+            onEachFeature: function (feature, layer) {
+                //layer.bindTooltip(feature.properties.instName, {permanent: false, direction: 'center'});
+                layer.bindTooltip(feature.properties.Name_and_Budget,
+                    {permanent: false, direction: 'center', className: 'feature-tooltip'});
+            }
+        });
+    var markers = L.geoJson.ajax('js/OR_TProj.geojson',{
+        style: style,
+        onEachFeature: function (feature, layer) {
+            layer.bindPopup(feature.properties.Name_and_Cost)
+        }
+    })
+    var cities = L.geoJson.ajax('js/OR_CitBud.geojson ', {
+        style:style,
+        onEachFeature: function (feature, layer) {
+            layer.bindTooltip(feature.properties.Name_and_Budget,{
+                className: 'feature-tooltip'
+            })
+        }
+    })
+    var counties_choropleth_legend = '<p><b>County Budgets</b></p>' +
+        '<i style="background: #fff5eb; opacity: 0.5"></i><p><b>0 - 499,999</b></p>' +
+        '<i style="background: #fee6ce; opacity: 0.5"></i><p><b>500,000 - 999,999</b></p>' +
+        '<i style="background: #fdd0a2; opacity: 0.5"></i><p><b>1,000,000 - 1,499,999</b></p>' +
+        '<i style="background: #fdae6b; opacity: 0.5"></i><p><b>1,500,000 - 2,499,999</b></p>' +
+        '<i style="background: #fd8d3c; opacity: 0.5"></i><p><b>2,500,000 - 3,499,999</b></p>' +
+        '<i style="background: #f16913; opacity: 0.5"></i><p><b>3,500,000 - 6,999,999</b></p>' +
+        '<i style="background: #d94801; opacity: 0.5"></i><p><b>7,000,000 - 9,999,999</b></p>' +
+        '<i style="background: #a63603; opacity: 0.5"></i><p><b>10,000,000 - 13,999,999</b></p>' +
+        '<i style="background: #7f2704; opacity: 0.5"></i><p><b>14,000,000+</b></p>';
+
+    var layers = {
+        'layer 1': [counties_choropleth, counties_choropleth_legend],
+        'layer 2': [ L.geoJson.ajax('js/OR_CounBud.geojson', {color: 'white', weight: .5}),
+            '<i style="opacity: 0.5"></i><p><b>County Transportation Budgets</b></p>'],
+        'layer 3': [ L.geoJson.ajax('js/OR_HDist.geojson', {color: 'black', weight: .5}),
+            '<i style="opacity: 0.5"></i><p><b>House Districts</b></p>'],
+        'layer 4': [ L.geoJson.ajax('js/OR_SDist.geojson', {color: 'black', weight: .5}),
+            '<i style="opacity: 0.5"></i><p><b>Senate Districts</b></p>'],
+        'layer 5': [ L.geoJson.ajax('js/OR_CitBud.geojson', {color: '#d95f0e', weight: 1}),
+            '<i style="opacity: 0.5"></i><p><b>Oregon Cities</b></p>'],
+        'layer 6': [markers],
+        'layer 7': [cities]
+    };
+    var scenes = {
+        scene1: {lat: 43.7380178, lng: -123.5033563, zoom: 7, name: 'Overview'},
+        scene2: {lat: 43.7380178, lng: -123.5033563, zoom: 7, layers: ['layer 1'], name: "Counties"},
+        scene3: {lat: 44.331264,  lng: -123.0352084, zoom: 9, layers: ['layer 7'], name: "Cities"},
+        scene4: {layers: ['layer 3', 'layer 6'], name: "House Districts"},
+        scene5: {layers: ['layer 4', 'layer 6'], name: "Senate Districts"}
+    };
+    $('.main').storymap({
+        scenes: scenes,
+        layers: layers,
+        legend: true,
+        scale: true,
+        navbar: true,
+        createMap: function () {
+            var map = L.map('map').setView([44, -120], 7);
+            L.tileLayer('http://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}', {
+                maxZoom: 18,
+                minZoom: 6
+            }).addTo(map);
+            return map;
+        }
+    });
+</script>
+</body>
+</html>

@@ -111,12 +111,22 @@
                     {permanent: false, direction: 'center', className: 'feature-tooltip'});
             }
         });
+
     var markers = L.geoJson.ajax('js/OR_TProj.geojson',{
-        style: style,
+        pointToLayer: function (feature, latlng) {
+            return L.circleMarker(latlng, {
+                radius: Math.pow(feature.properties.Total, 0.2),
+                stroke: false,
+                color: '#e6550d',
+                fillOpacity: 0.5
+            })
+
+    },
         onEachFeature: function (feature, layer) {
-            layer.bindPopup(feature.properties.Name_and_Cost)
+            layer.bindTooltip(feature.properties.Name_and_Cost);
         }
-    })
+    });
+
     var cities = L.geoJson.ajax('js/OR_CitBud.geojson ', {
         style:style,
         onEachFeature: function (feature, layer) {
